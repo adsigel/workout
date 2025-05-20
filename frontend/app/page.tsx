@@ -18,6 +18,8 @@ interface Workout {
   estimated_duration_minutes: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function Home() {
   const [duration, setDuration] = useState(20);
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -28,7 +30,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:8000/workouts/generate?duration_minutes=${duration}`);
+      const response = await fetch(`${API_URL}/workouts/generate?duration_minutes=${duration}`);
       if (!response.ok) {
         throw new Error('Failed to generate workout');
       }
