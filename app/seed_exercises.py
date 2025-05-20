@@ -1,4 +1,4 @@
-from app.main import app
+# from app.main import app
 from app.models import MovementType, MuscleGroupType
 from app.database import get_db
 from sqlalchemy.orm import Session
