@@ -6,6 +6,7 @@ from . import models, schemas
 from .database import SessionLocal, engine
 from .models import MovementType, MuscleGroupType
 from .workout_generator import WorkoutGenerator
+from app.seed_exercises import seed_exercises
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -161,4 +162,9 @@ def generate_workout(duration_minutes: int, db: Session = Depends(get_db)):
             estimated_duration_minutes=workout["estimated_duration_minutes"]
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) 
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/seed")
+def seed(db: Session = Depends(get_db)):
+    seed_exercises(db)
+    return {"status": "seeded"} 
