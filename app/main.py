@@ -15,7 +15,10 @@ app = FastAPI(title="Workout Planner API")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=[
+        "https://workout-client.onrender.com",  # TODO: Replace with your actual frontend Render URL
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
