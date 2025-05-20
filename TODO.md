@@ -51,4 +51,5 @@
 - [ ] Create workout challenges
 - [ ] Add nutrition tracking integration
 - [ ] Implement workout reminders/notifications
-- [ ] Add export functionality for workout data 
+- [ ] Add export functionality for workout data
+- [ ] Create a custom API endpoint that returns a human-readable and filterable list of exercises (e.g., by equipment, muscle group, movement type, etc.) 

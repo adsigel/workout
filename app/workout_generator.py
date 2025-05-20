@@ -114,41 +114,47 @@ class WorkoutGenerator:
         
         return total_duration
     
-    def generate_workout(self, target_duration_minutes: int) -> Dict:
-        """Generate a workout that meets the duration requirement."""
-        if target_duration_minutes < 10:
-            raise ValueError("Minimum workout duration is 10 minutes")
-        
-        target_duration_seconds = target_duration_minutes * 60
-        
-        # Start with 5 exercises
-        exercises = self.generate_superset(size=5)
-        rounds = 2
-        
-        # Calculate initial duration
-        duration = self.calculate_workout_duration(exercises, rounds)
-        
-        # Adjust number of exercises and rounds to meet duration target
-        while duration < target_duration_seconds and len(exercises) < 7:
-            # Try adding another exercise
-            try:
-                new_exercise = self.select_exercise_for_movement_type(
-                    random.choice(list(self.required_movement_types)),
-                    set(exercises)
-                )
-                exercises.append(new_exercise)
-                duration = self.calculate_workout_duration(exercises, rounds)
-            except ValueError:
-                break
-        
-        # If still under target duration, increase rounds
-        while duration < target_duration_seconds and rounds < 3:
-            rounds += 1
-            duration = self.calculate_workout_duration(exercises, rounds)
-        
+    def generate_workout(self, duration_minutes: int) -> Dict:
+        """Generate a workout with the specified duration in minutes."""
+        exercises = self.db.query(models.Exercise).all()
+        if not exercises:
+            raise ValueError("No exercises available in the database")
+
+        # Deduplicate exercises by name
+        unique_exercises = {}
+        for ex in exercises:
+            if ex.name not in unique_exercises:
+                unique_exercises[ex.name] = ex
+        exercises = list(unique_exercises.values())
+
+        min_exercises = 3
+        max_exercises = min(10, len(exercises))
+        min_rounds = 1
+        max_rounds = 4
+
+        best_config = None
+        best_diff = float('inf')
+        target_seconds = duration_minutes * 60
+
+        # Try different combinations of exercises and rounds
+        for num_exercises in range(min_exercises, max_exercises + 1):
+            for num_rounds in range(min_rounds, max_rounds + 1):
+                if num_exercises > len(exercises):
+                    continue
+                selected = random.sample(exercises, num_exercises)
+                total_seconds = self.calculate_workout_duration(selected, num_rounds)
+                diff = abs(total_seconds - target_seconds)
+                if diff < best_diff:
+                    best_diff = diff
+                    best_config = (selected, num_rounds, total_seconds)
+                if diff == 0:
+                    break
+
+        workout_exercises, rounds, total_seconds = best_config
+        estimated_duration_minutes = round(total_seconds / 60)
+
         return {
-            "exercises": exercises,
+            "exercises": workout_exercises,
             "rounds": rounds,
-            "estimated_duration_minutes": duration // 60,
-            "estimated_duration_seconds": duration
+            "estimated_duration_minutes": estimated_duration_minutes
         } 
