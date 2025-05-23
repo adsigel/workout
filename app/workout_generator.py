@@ -114,8 +114,8 @@ class WorkoutGenerator:
         
         return total_duration
     
-    def generate_workout(self, duration_minutes: int) -> Dict:
-        """Generate a workout with the specified duration in minutes."""
+    def generate_workout(self, duration_minutes: int, allowed_muscle_groups: list[str] = None) -> Dict:
+        """Generate a workout with the specified duration in minutes, optionally filtering by allowed muscle groups."""
         exercises = self.db.query(models.Exercise).all()
         if not exercises:
             raise ValueError("No exercises available in the database")
@@ -126,6 +126,18 @@ class WorkoutGenerator:
             if ex.name not in unique_exercises:
                 unique_exercises[ex.name] = ex
         exercises = list(unique_exercises.values())
+
+        # Filter by allowed muscle groups if provided
+        if allowed_muscle_groups:
+            allowed_set = set(allowed_muscle_groups)
+            def is_allowed(ex):
+                ex_mgs = {mg.name for mg in ex.muscle_groups}
+                # Only include exercises where all muscle groups are in the allowed set
+                return ex_mgs.issubset(allowed_set)
+            filtered_exercises = list(filter(is_allowed, exercises))
+            if filtered_exercises:
+                exercises = filtered_exercises
+            # If no exercises match, fallback to all exercises (so user always gets a workout)
 
         min_exercises = 3
         max_exercises = min(10, len(exercises))

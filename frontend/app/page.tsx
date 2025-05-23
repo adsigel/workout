@@ -2,6 +2,13 @@
 
 import { useState } from 'react';
 
+const MUSCLE_GROUPS = [
+  'chest', 'front_deltoids', 'side_deltoids', 'rear_deltoids', 'biceps', 'triceps', 'forearms', 'upper_back', 'lats',
+  'abs', 'obliques', 'lower_back', 'quads', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors'
+];
+
+const DURATION_OPTIONS = [15, 20, 30, 45];
+
 interface Exercise {
   id: number;
   name: string;
@@ -25,12 +32,25 @@ export default function Home() {
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<string[]>([...MUSCLE_GROUPS]);
+
+  const handleMuscleGroupChange = (group: string) => {
+    setSelectedMuscleGroups((prev) =>
+      prev.includes(group)
+        ? prev.filter((g) => g !== group)
+        : [...prev, group]
+    );
+  };
 
   const generateWorkout = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/workouts/generate?duration_minutes=${duration}`);
+      const params = new URLSearchParams({
+        duration_minutes: duration.toString(),
+      });
+      selectedMuscleGroups.forEach((mg) => params.append('muscle_groups', mg));
+      const response = await fetch(`${API_URL}/workouts/generate?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to generate workout');
       }
@@ -45,6 +65,7 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
+      <div className="bg-pink-500 text-white p-4 mb-4">Test Tailwind Color</div>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold mb-4">Generate Workout</h2>
         <div className="space-y-4">
@@ -52,20 +73,38 @@ export default function Home() {
             <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
               Workout Duration (minutes)
             </label>
-            <input
-              type="number"
+            <select
               id="duration"
-              min="10"
-              max="60"
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-[20px]"
+            >
+              {DURATION_OPTIONS.map((option) => (
+                <option key={option} value={option}>{option} minutes</option>
+              ))}
+            </select>
+          </div>
+          <div className="h-8"></div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 mt-6">Muscle Groups</label>
+            <div className="flex flex-col gap-2">
+              {MUSCLE_GROUPS.map((group) => (
+                <label key={group} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedMuscleGroups.includes(group)}
+                    onChange={() => handleMuscleGroupChange(group)}
+                    className="accent-blue-600"
+                  />
+                  <span className="text-base capitalize">{group.replace('_', ' ')}</span>
+                </label>
+              ))}
+            </div>
           </div>
           <button
             onClick={generateWorkout}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full bg-orange-600 text-white py-3 px-4 rounded-md text-[24px] font-semibold hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 mt-6"
           >
             {loading ? 'Generating...' : 'Generate Workout'}
           </button>

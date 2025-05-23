@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
@@ -136,11 +136,15 @@ def read_exercise(exercise_id: int, db: Session = Depends(get_db)):
     )
 
 @app.get("/workouts/generate", response_model=schemas.Workout)
-def generate_workout(duration_minutes: int, db: Session = Depends(get_db)):
-    """Generate a workout with the specified duration in minutes."""
+def generate_workout(
+    duration_minutes: int,
+    muscle_groups: list[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """Generate a workout with the specified duration in minutes and allowed muscle groups."""
     try:
         generator = WorkoutGenerator(db)
-        workout = generator.generate_workout(duration_minutes)
+        workout = generator.generate_workout(duration_minutes, allowed_muscle_groups=muscle_groups)
         
         # Convert exercises to response format
         exercises = []
