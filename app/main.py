@@ -118,6 +118,12 @@ def read_exercises(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
         ))
     return response_exercises
 
+@app.get("/exercises/names", response_model=List[str])
+def read_exercise_names(db: Session = Depends(get_db)):
+    """Get just the names of all exercises."""
+    exercises = db.query(models.Exercise).all()
+    return [exercise.name for exercise in exercises]
+
 @app.get("/exercises/{exercise_id}", response_model=schemas.Exercise)
 def read_exercise(exercise_id: int, db: Session = Depends(get_db)):
     exercise = db.query(models.Exercise).filter(models.Exercise.id == exercise_id).first()
@@ -139,12 +145,17 @@ def read_exercise(exercise_id: int, db: Session = Depends(get_db)):
 def generate_workout(
     duration_minutes: int,
     muscle_groups: list[str] = Query(None),
+    equipment: list[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Generate a workout with the specified duration in minutes and allowed muscle groups."""
+    """Generate a workout with the specified duration in minutes, allowed muscle groups, and allowed equipment."""
     try:
         generator = WorkoutGenerator(db)
-        workout = generator.generate_workout(duration_minutes, allowed_muscle_groups=muscle_groups)
+        workout = generator.generate_workout(
+            duration_minutes, 
+            allowed_muscle_groups=muscle_groups,
+            allowed_equipment=equipment
+        )
         
         # Convert exercises to response format
         exercises = []
@@ -171,4 +182,29 @@ def generate_workout(
 @app.post("/seed")
 def seed(db: Session = Depends(get_db)):
     seed_exercises(db)
-    return {"status": "seeded"} 
+    return {"status": "seeded"}
+
+@app.post("/exercises/cleanup", response_model=List[str])
+def cleanup_duplicates(db: Session = Depends(get_db)):
+    """Remove duplicate exercises, keeping only the first occurrence of each name."""
+    # Get all exercises
+    all_exercises = db.query(models.Exercise).all()
+    
+    # Track seen names and exercises to delete
+    seen_names = set()
+    to_delete = []
+    
+    for exercise in all_exercises:
+        if exercise.name in seen_names:
+            to_delete.append(exercise)
+        else:
+            seen_names.add(exercise.name)
+    
+    # Delete duplicates
+    deleted_names = []
+    for exercise in to_delete:
+        deleted_names.append(exercise.name)
+        db.delete(exercise)
+    
+    db.commit()
+    return deleted_names 

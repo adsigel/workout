@@ -114,8 +114,8 @@ class WorkoutGenerator:
         
         return total_duration
     
-    def generate_workout(self, duration_minutes: int, allowed_muscle_groups: list[str] = None) -> Dict:
-        """Generate a workout with the specified duration in minutes, optionally filtering by allowed muscle groups."""
+    def generate_workout(self, duration_minutes: int, allowed_muscle_groups: list[str] = None, allowed_equipment: list[str] = None) -> Dict:
+        """Generate a workout with the specified duration in minutes, optionally filtering by allowed muscle groups and equipment."""
         exercises = self.db.query(models.Exercise).all()
         if not exercises:
             raise ValueError("No exercises available in the database")
@@ -129,15 +129,25 @@ class WorkoutGenerator:
 
         # Filter by allowed muscle groups if provided
         if allowed_muscle_groups:
-            allowed_set = set(allowed_muscle_groups)
-            def is_allowed(ex):
+            allowed_mg_set = set(allowed_muscle_groups)
+            def is_allowed_by_mg(ex):
                 ex_mgs = {mg.name for mg in ex.muscle_groups}
                 # Only include exercises where all muscle groups are in the allowed set
-                return ex_mgs.issubset(allowed_set)
-            filtered_exercises = list(filter(is_allowed, exercises))
+                return ex_mgs.issubset(allowed_mg_set)
+            filtered_exercises = list(filter(is_allowed_by_mg, exercises))
             if filtered_exercises:
                 exercises = filtered_exercises
-            # If no exercises match, fallback to all exercises (so user always gets a workout)
+
+        # Filter by allowed equipment if provided
+        if allowed_equipment:
+            allowed_equip_set = set(allowed_equipment)
+            def is_allowed_by_equip(ex):
+                ex_equip = {e.name for e in ex.equipment}
+                # Include exercise if ANY of its equipment is in the allowed set
+                return bool(ex_equip.intersection(allowed_equip_set))
+            filtered_exercises = list(filter(is_allowed_by_equip, exercises))
+            if filtered_exercises:
+                exercises = filtered_exercises
 
         min_exercises = 3
         max_exercises = min(10, len(exercises))
