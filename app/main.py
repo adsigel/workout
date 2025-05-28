@@ -181,8 +181,19 @@ def generate_workout(
 
 @app.post("/seed")
 def seed(db: Session = Depends(get_db)):
-    seed_exercises(db)
-    return {"status": "seeded"}
+    try:
+        result = seed_exercises(db)
+        return {
+            "status": "seeded",
+            "summary": {
+                "added": result.get("added", []),
+                "skipped": result.get("skipped", []),
+                "total_added": result.get("total_added", 0),
+                "total_skipped": result.get("total_skipped", 0)
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/exercises/cleanup", response_model=List[str])
 def cleanup_duplicates(db: Session = Depends(get_db)):

@@ -327,13 +327,97 @@ def seed_exercises(db: Session):
             "estimated_duration": 45,
             "equipment": ["dumbbell"],
             "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS]
+        },
+        {
+            "name": "Bicep Hammer Curls",
+            "description": "Stand with feet shoulder-width apart, holding dumbbells with palms facing each other. Curl the weights up while keeping palms facing inward throughout the movement.",
+            "movement_types": [MovementType.PULL],
+            "estimated_duration": 35,
+            "equipment": ["dumbbell"],
+            "muscle_groups": [MuscleGroupType.BICEPS, MuscleGroupType.FOREARMS]
+        },
+        {
+            "name": "Pushup into Side Plank",
+            "description": "Start in a pushup position. Perform a pushup, then rotate into a side plank, raising one arm toward the ceiling. Return to pushup position and repeat on the other side.",
+            "movement_types": [MovementType.PUSH, MovementType.CORE],
+            "estimated_duration": 45,
+            "equipment": [],
+            "muscle_groups": [MuscleGroupType.CHEST, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+        },
+        {
+            "name": "Sumo Squat",
+            "description": "Stand with feet wide apart, toes pointed slightly outward. Hold a weight between your legs and perform a squat, keeping chest up and knees tracking over toes.",
+            "movement_types": [MovementType.SQUAT],
+            "estimated_duration": 40,
+            "equipment": ["kettlebell", "dumbbell"],
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABS]
+        },
+        {
+            "name": "Single-arm Kettlebell Clean",
+            "description": "Start with kettlebell between feet. Hinge at hips, grab kettlebell, and explosively pull it up to rack position, keeping it close to body.",
+            "movement_types": [MovementType.HINGE, MovementType.PULL],
+            "estimated_duration": 40,
+            "equipment": ["kettlebell"],
+            "muscle_groups": [MuscleGroupType.HAMSTRINGS, MuscleGroupType.GLUTES, MuscleGroupType.FOREARMS, MuscleGroupType.FRONT_DELTOIDS]
+        },
+        {
+            "name": "Lateral Lunge",
+            "description": "Step to the side, keeping toes pointed forward. Bend the knee of the stepping leg while keeping the other leg straight. Return to center and repeat on other side.",
+            "movement_types": [MovementType.SQUAT],
+            "estimated_duration": 40,
+            "equipment": ["dumbbell", "kettlebell"],
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABDUCTORS]
+        },
+        {
+            "name": "Boxer Squat",
+            "description": "Perform a squat while holding weights at chest height, alternating between left and right sides like a boxer's stance.",
+            "movement_types": [MovementType.SQUAT],
+            "estimated_duration": 45,
+            "equipment": ["dumbbell", "kettlebell"],
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+        },
+        {
+            "name": "Russian Twists",
+            "description": "Sit on floor with knees bent, holding weight. Lean back slightly and rotate torso from side to side, keeping core engaged.",
+            "movement_types": [MovementType.TWIST],
+            "estimated_duration": 40,
+            "equipment": ["dumbbell", "kettlebell"],
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+        },
+        {
+            "name": "Leg Raises",
+            "description": "Lie on back with legs straight. Raise legs to vertical position, then lower back down with control, keeping lower back pressed into floor.",
+            "movement_types": [MovementType.CORE],
+            "estimated_duration": 35,
+            "equipment": [],
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.LOWER_BACK]
+        },
+        {
+            "name": "Windshield Wipers",
+            "description": "Lie on back with arms extended to sides. Raise legs to vertical, then lower them side to side like windshield wipers, keeping shoulders on ground.",
+            "movement_types": [MovementType.CORE],
+            "estimated_duration": 40,
+            "equipment": [],
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
         }
     ]
     
     # Validate muscle groups before proceeding
     validate_muscle_groups(exercises)
     
+    # Get existing exercise names
+    existing_exercises = {ex.name for ex in db.query(models.Exercise).all()}
+    
+    # Track which exercises were added
+    added_exercises = []
+    skipped_exercises = []
+    
     for exercise_data in exercises:
+        # Skip if exercise already exists
+        if exercise_data["name"] in existing_exercises:
+            skipped_exercises.append(exercise_data["name"])
+            continue
+            
         # Create exercise
         db_exercise = models.Exercise(
             name=exercise_data["name"],
@@ -369,12 +453,28 @@ def seed_exercises(db: Session):
                 db.flush()
             db_exercise.muscle_groups.append(mg)
 
+        added_exercises.append(exercise_data["name"])
+
     db.commit()
+    
+    # Return summary of what was added and skipped
+    return {
+        "added": added_exercises,
+        "skipped": skipped_exercises,
+        "total_added": len(added_exercises),
+        "total_skipped": len(skipped_exercises)
+    }
 
 if __name__ == "__main__":
     # List valid muscle groups before seeding
     list_valid_muscle_groups()
     
     db = next(get_db())
-    seed_exercises(db)
-    print("Exercises seeded successfully!") 
+    result = seed_exercises(db)
+    print("\nSeeding Summary:")
+    print(f"Added {result['total_added']} new exercises:")
+    for name in result["added"]:
+        print(f"- {name}")
+    print(f"\nSkipped {result['total_skipped']} existing exercises:")
+    for name in result["skipped"]:
+        print(f"- {name}") 
