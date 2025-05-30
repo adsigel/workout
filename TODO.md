@@ -16,6 +16,7 @@
   - High: 30s between exercises, 1.5min between supersets
 - [ ] Add option for EMOM (Every Minute On the Minute) style workouts
 - [ ] Implement AMRAP (As Many Rounds As Possible) workout type
+- [ ] Update workout database to identify which exercises are dynamic and enable filtering
 
 ## Exercise Database Expansion
 - [ ] Add more compound movements
@@ -25,6 +26,7 @@
 - [ ] Add yoga/stretching exercises
 - [ ] Include mobility exercises
 - [ ] Add exercise difficulty ratings
+- [ ] Add more exercises beyond the sagittal plane
 
 ## Progress Tracking
 - [ ] Create workout history table
@@ -43,6 +45,7 @@
 - [ ] Add progressive overload tracking
 - [ ] Implement deload week scheduling
 - [ ] Add exercise rotation to prevent plateaus
+- [ ] Allow for the user to replace individual exercises post-generation
 
 ## Additional Features
 - [ ] Add workout sharing functionality

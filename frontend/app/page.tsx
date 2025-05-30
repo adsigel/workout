@@ -79,7 +79,6 @@ export default function Home() {
 
   return (
     <>
-      <div className="bg-pink-500 text-white p-4">Tailwind is working!</div>
       <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
         <div className="relative py-3 sm:max-w-xl sm:mx-auto">
           <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
@@ -106,7 +105,7 @@ export default function Home() {
 
                   {/* Muscle Groups Selection */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Muscle Groups</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Muscle Groups (click to exclude)</label>
                     <div className="grid grid-cols-2 gap-2">
                       {MUSCLE_GROUPS.map((group) => (
                         <label key={group} className="inline-flex items-center">
@@ -124,7 +123,7 @@ export default function Home() {
 
                   {/* Equipment Selection */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Equipment</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Equipmen (click to exclude)</label>
                     <div className="grid grid-cols-2 gap-2">
                       {EQUIPMENT.map((equipment) => (
                         <label key={equipment} className="inline-flex items-center">
@@ -143,7 +142,7 @@ export default function Home() {
                   <button
                     onClick={generateWorkout}
                     disabled={loading}
-                    className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-lg text-2xl font-bold text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                    className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-lg text-2xl font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                   >
                     {loading ? 'Generating...' : 'Generate Workout'}
                   </button>
@@ -169,17 +168,19 @@ export default function Home() {
               <div className="space-y-4">
                 {workout.exercises.map((exercise, index) => (
                   <div key={exercise.id} className="border-b border-gray-200 pb-4 last:border-0">
-                    <h3 className="font-medium">{index + 1}. {exercise.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium mb-0">{index + 1}. {exercise.name}</h3>
+                      {exercise.equipment.length > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase">
+                          {exercise.equipment.map(e => e.name === 'kettlebell' ? 'KB' : e.name === 'dumbbell' ? 'DB' : e.name.toUpperCase()).join(', ')}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {exercise.movement_types.length > 0 && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           {exercise.movement_types.join(', ')}
-                        </span>
-                      )}
-                      {exercise.equipment.length > 0 && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {exercise.equipment.map(e => e.name).join(', ')}
                         </span>
                       )}
                       {exercise.muscle_groups.map((group) => (

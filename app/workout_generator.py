@@ -153,6 +153,15 @@ class WorkoutGenerator:
         
         return total_duration
     
+    def is_frontal_or_transverse(self, exercise: models.Exercise) -> bool:
+        """Return True if exercise is frontal or transverse plane (TWIST or targets side_deltoids, adductors, abductors)."""
+        movement_types = self.get_movement_types(exercise)
+        muscle_groups = self.get_muscle_groups(exercise)
+        if MovementType.TWIST in movement_types:
+            return True
+        frontal_mgs = {MuscleGroupType.SIDE_DELTOIDS, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABDUCTORS}
+        return bool(frontal_mgs.intersection(muscle_groups))
+
     def generate_workout(self, duration_minutes: int, allowed_muscle_groups: list[str] = None, allowed_equipment: list[str] = None) -> Dict:
         """Generate a workout with the specified duration in minutes, optionally filtering by allowed muscle groups and equipment."""
         exercises = self.db.query(models.Exercise).all()
@@ -188,6 +197,15 @@ class WorkoutGenerator:
             if filtered_exercises:
                 exercises = filtered_exercises
 
+        # Identify all frontal/transverse exercises
+        frontal_transverse_exercises = [ex for ex in exercises if self.is_frontal_or_transverse(ex)]
+
+        # Determine how many are required
+        if duration_minutes <= 20:
+            required_count = 1
+        else:
+            required_count = 2
+
         min_exercises = 3
         max_exercises = min(10, len(exercises))
         min_rounds = 1
@@ -202,28 +220,36 @@ class WorkoutGenerator:
             for num_rounds in range(min_rounds, max_rounds + 1):
                 if num_exercises > len(exercises):
                     continue
-                
                 # Select exercises ensuring no similar exercises are adjacent
                 selected = []
                 available = exercises.copy()
                 previous_exercise = None
-                
                 while len(selected) < num_exercises and available:
-                    # Try to find an exercise that's not similar to the previous one
                     candidates = [ex for ex in available if not previous_exercise or not self.are_exercises_similar(ex, previous_exercise)]
-                    
-                    # If no suitable candidates, fall back to any available exercise
                     if not candidates:
                         candidates = available
-                    
                     exercise = random.choice(candidates)
                     selected.append(exercise)
                     available.remove(exercise)
                     previous_exercise = exercise
-                
                 if len(selected) < num_exercises:
-                    continue  # Skip this configuration if we couldn't get enough exercises
-                
+                    continue
+                # Ensure required number of frontal/transverse exercises
+                ft_count = sum(1 for ex in selected if self.is_frontal_or_transverse(ex))
+                if ft_count < required_count and len(frontal_transverse_exercises) >= required_count:
+                    # Replace random exercises with frontal/transverse ones
+                    to_add = required_count - ft_count
+                    # Find which ones are missing
+                    missing = [ex for ex in frontal_transverse_exercises if ex not in selected]
+                    if len(missing) >= to_add:
+                        # Replace random non-frontal/transverse exercises
+                        non_ft_indices = [i for i, ex in enumerate(selected) if not self.is_frontal_or_transverse(ex)]
+                        for i in non_ft_indices[:to_add]:
+                            selected[i] = missing.pop()
+                # Recount after replacement
+                ft_count = sum(1 for ex in selected if self.is_frontal_or_transverse(ex))
+                if ft_count < required_count:
+                    continue  # Skip this config if we can't meet the requirement
                 total_seconds = self.calculate_workout_duration(selected, num_rounds)
                 diff = abs(total_seconds - target_seconds)
                 if diff < best_diff:
@@ -231,10 +257,8 @@ class WorkoutGenerator:
                     best_config = (selected, num_rounds, total_seconds)
                 if diff == 0:
                     break
-
         workout_exercises, rounds, total_seconds = best_config
         estimated_duration_minutes = round(total_seconds / 60)
-
         return {
             "exercises": workout_exercises,
             "rounds": rounds,
