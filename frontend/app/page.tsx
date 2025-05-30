@@ -78,123 +78,126 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-        <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-          <div className="max-w-md mx-auto">
-            <div className="divide-y divide-gray-200">
-              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h2 className="text-2xl font-bold mb-8">Generate Workout</h2>
-                
-                {/* Duration Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                  <select
-                    value={duration}
-                    onChange={(e) => setDuration(Number(e.target.value))}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
+    <>
+      <div className="bg-pink-500 text-white p-4">Tailwind is working!</div>
+      <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+        <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+          <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
+            <div className="max-w-md mx-auto">
+              <div className="divide-y divide-gray-200">
+                <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                  <h2 className="text-2xl font-bold mb-8">Generate Workout</h2>
+                  
+                  {/* Duration Selection */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(Number(e.target.value))}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
+                    >
+                      {DURATION_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Muscle Groups Selection */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Muscle Groups</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {MUSCLE_GROUPS.map((group) => (
+                        <label key={group} className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedMuscleGroups.includes(group)}
+                            onChange={() => handleMuscleGroupChange(group)}
+                            className="form-checkbox h-4 w-4 text-orange-600"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{group.replace('_', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Equipment Selection */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Equipment</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {EQUIPMENT.map((equipment) => (
+                        <label key={equipment} className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedEquipment.includes(equipment)}
+                            onChange={() => handleEquipmentChange(equipment)}
+                            className="form-checkbox h-4 w-4 text-orange-600"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{equipment.replace('_', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={generateWorkout}
+                    disabled={loading}
+                    className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-lg text-2xl font-bold text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                   >
-                    {DURATION_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                    {loading ? 'Generating...' : 'Generate Workout'}
+                  </button>
                 </div>
-
-                {/* Muscle Groups Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Muscle Groups</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {MUSCLE_GROUPS.map((group) => (
-                      <label key={group} className="inline-flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedMuscleGroups.includes(group)}
-                          onChange={() => handleMuscleGroupChange(group)}
-                          className="form-checkbox h-4 w-4 text-orange-600"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{group.replace('_', ' ')}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Equipment Selection */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Equipment</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {EQUIPMENT.map((equipment) => (
-                      <label key={equipment} className="inline-flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedEquipment.includes(equipment)}
-                          onChange={() => handleEquipmentChange(equipment)}
-                          className="form-checkbox h-4 w-4 text-orange-600"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{equipment.replace('_', ' ')}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={generateWorkout}
-                  disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                >
-                  {loading ? 'Generating...' : 'Generate Workout'}
-                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Workout Display */}
-      {error && (
-        <div className="mt-4 text-red-600 text-center">{error}</div>
-      )}
+        {/* Workout Display */}
+        {error && (
+          <div className="mt-4 text-red-600 text-center">{error}</div>
+        )}
 
-      {workout && (
-        <div className="mt-8 max-w-2xl mx-auto px-4">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">
-              Your {workout.estimated_duration_minutes}-Minute Workout
-              <span className="text-gray-500 text-sm ml-2">({workout.rounds} rounds)</span>
-            </h2>
-            
-            <div className="space-y-4">
-              {workout.exercises.map((exercise, index) => (
-                <div key={exercise.id} className="border-b border-gray-200 pb-4 last:border-0">
-                  <h3 className="font-medium">{index + 1}. {exercise.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {exercise.movement_types.length > 0 && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {exercise.movement_types.join(', ')}
-                      </span>
-                    )}
-                    {exercise.equipment.length > 0 && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {exercise.equipment.map(e => e.name).join(', ')}
-                      </span>
-                    )}
-                    {exercise.muscle_groups.map((group) => (
-                      <span
-                        key={group.name}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                      >
-                        {group.name}
-                      </span>
-                    ))}
+        {workout && (
+          <div className="mt-8 max-w-2xl mx-auto px-4">
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                Your {workout.estimated_duration_minutes}-Minute Workout
+                <span className="text-gray-500 text-sm ml-2">({workout.rounds} rounds)</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {workout.exercises.map((exercise, index) => (
+                  <div key={exercise.id} className="border-b border-gray-200 pb-4 last:border-0">
+                    <h3 className="font-medium">{index + 1}. {exercise.name}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {exercise.movement_types.length > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {exercise.movement_types.join(', ')}
+                        </span>
+                      )}
+                      {exercise.equipment.length > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {exercise.equipment.map(e => e.name).join(', ')}
+                        </span>
+                      )}
+                      {exercise.muscle_groups.map((group) => (
+                        <span
+                          key={group.name}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
+                          {group.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 } 

@@ -1,4 +1,4 @@
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Optional
 from sqlalchemy.orm import Session
 from . import models
 from .models import MovementType, MuscleGroupType
@@ -49,11 +49,40 @@ class WorkoutGenerator:
         muscle_groups2 = self.get_muscle_groups(exercise2)
         return bool(muscle_groups1.intersection(muscle_groups2))
     
+    def get_movement_types(self, exercise: models.Exercise) -> Set[MovementType]:
+        """Get all movement types for an exercise."""
+        stmt = models.exercise_movement_types.select().where(
+            models.exercise_movement_types.c.exercise_id == exercise.id
+        )
+        result = self.db.execute(stmt)
+        return {MovementType(mt[1]) for mt in result}
+    
+    def are_exercises_similar(self, exercise1: models.Exercise, exercise2: models.Exercise) -> bool:
+        """Check if two exercises are too similar to be done in sequence."""
+        # Get movement types and muscle groups
+        movement_types1 = self.get_movement_types(exercise1)
+        movement_types2 = self.get_movement_types(exercise2)
+        muscle_groups1 = self.get_muscle_groups(exercise1)
+        muscle_groups2 = self.get_muscle_groups(exercise2)
+        
+        # Check for movement type overlap
+        movement_overlap = bool(movement_types1.intersection(movement_types2))
+        
+        # Check for significant muscle group overlap (more than 50% of muscle groups)
+        common_muscle_groups = muscle_groups1.intersection(muscle_groups2)
+        total_muscle_groups = muscle_groups1.union(muscle_groups2)
+        muscle_overlap_ratio = len(common_muscle_groups) / len(total_muscle_groups)
+        
+        # Exercises are similar if they share movement types or have significant muscle group overlap
+        return movement_overlap or muscle_overlap_ratio > 0.5
+    
     def select_exercise_for_movement_type(self, movement_type: MovementType, 
-                                        excluded_exercises: Set[models.Exercise]) -> models.Exercise:
-        """Select a random exercise for a movement type, excluding already selected exercises."""
+                                        excluded_exercises: Set[models.Exercise],
+                                        previous_exercise: Optional[models.Exercise] = None) -> models.Exercise:
+        """Select a random exercise for a movement type, excluding already selected exercises and similar exercises."""
         available_exercises = [ex for ex in self.get_exercises_by_movement_type(movement_type)
                              if ex not in excluded_exercises]
+        
         if not available_exercises:
             # If no exercises found for this movement type, try core movement types
             if movement_type in self.core_movement_types:
@@ -64,6 +93,16 @@ class WorkoutGenerator:
             
             if not available_exercises:
                 raise ValueError(f"No available exercises for movement type {movement_type}")
+        
+        # If there's a previous exercise, filter out similar ones
+        if previous_exercise:
+            available_exercises = [ex for ex in available_exercises 
+                                 if not self.are_exercises_similar(ex, previous_exercise)]
+            
+            # If we filtered out all exercises, fall back to the original list
+            if not available_exercises:
+                available_exercises = [ex for ex in self.get_exercises_by_movement_type(movement_type)
+                                     if ex not in excluded_exercises]
                 
         return random.choice(available_exercises)
     
@@ -163,7 +202,28 @@ class WorkoutGenerator:
             for num_rounds in range(min_rounds, max_rounds + 1):
                 if num_exercises > len(exercises):
                     continue
-                selected = random.sample(exercises, num_exercises)
+                
+                # Select exercises ensuring no similar exercises are adjacent
+                selected = []
+                available = exercises.copy()
+                previous_exercise = None
+                
+                while len(selected) < num_exercises and available:
+                    # Try to find an exercise that's not similar to the previous one
+                    candidates = [ex for ex in available if not previous_exercise or not self.are_exercises_similar(ex, previous_exercise)]
+                    
+                    # If no suitable candidates, fall back to any available exercise
+                    if not candidates:
+                        candidates = available
+                    
+                    exercise = random.choice(candidates)
+                    selected.append(exercise)
+                    available.remove(exercise)
+                    previous_exercise = exercise
+                
+                if len(selected) < num_exercises:
+                    continue  # Skip this configuration if we couldn't get enough exercises
+                
                 total_seconds = self.calculate_workout_duration(selected, num_rounds)
                 diff = abs(total_seconds - target_seconds)
                 if diff < best_diff:
