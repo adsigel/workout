@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
@@ -7,6 +7,7 @@ from .database import SessionLocal, engine
 from .models import MovementType, MuscleGroupType
 from .workout_generator import WorkoutGenerator
 from app.seed_exercises import seed_exercises
+import logging
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -44,7 +45,8 @@ def create_exercise(exercise: schemas.ExerciseCreate, db: Session = Depends(get_
     db_exercise = models.Exercise(
         name=exercise.name,
         description=exercise.description,
-        estimated_duration=exercise.estimated_duration
+        estimated_duration=exercise.estimated_duration,
+        intensity=getattr(exercise, 'intensity', 'medium')
     )
     db.add(db_exercise)
     db.flush()  # Flush to get the ID
@@ -107,6 +109,7 @@ def read_exercises(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     response_exercises = []
     for exercise in exercises:
         movement_types = get_exercise_movement_types(db, exercise.id)
+        intensity = getattr(exercise, "intensity", None) or "medium"
         response_exercises.append(schemas.Exercise(
             id=exercise.id,
             name=exercise.name,
@@ -114,7 +117,8 @@ def read_exercises(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
             movement_types=movement_types,
             estimated_duration=exercise.estimated_duration,
             equipment=exercise.equipment,
-            muscle_groups=exercise.muscle_groups
+            muscle_groups=exercise.muscle_groups,
+            intensity=intensity
         ))
     return response_exercises
 
@@ -146,38 +150,47 @@ def generate_workout(
     duration_minutes: int,
     muscle_groups: list[str] = Query(None),
     equipment: list[str] = Query(None),
+    intensity_level: int = Query(3),
     db: Session = Depends(get_db)
 ):
-    """Generate a workout with the specified duration in minutes, allowed muscle groups, and allowed equipment."""
+    """Generate a workout with the specified duration in minutes, allowed muscle groups, allowed equipment, and intensity level (1-5)."""
     try:
         generator = WorkoutGenerator(db)
         workout = generator.generate_workout(
             duration_minutes, 
             allowed_muscle_groups=muscle_groups,
-            allowed_equipment=equipment
+            allowed_equipment=equipment,
+            intensity_level=intensity_level
         )
         
         # Convert exercises to response format
         exercises = []
         for exercise in workout["exercises"]:
             movement_types = get_exercise_movement_types(db, exercise.id)
-            exercises.append(schemas.Exercise(
+            exercise_response = schemas.Exercise(
                 id=exercise.id,
                 name=exercise.name,
                 description=exercise.description,
                 movement_types=movement_types,
                 estimated_duration=exercise.estimated_duration,
                 equipment=exercise.equipment,
-                muscle_groups=exercise.muscle_groups
-            ))
+                muscle_groups=exercise.muscle_groups,
+                intensity=exercise.intensity
+            )
+            exercises.append(exercise_response)
         
-        return schemas.Workout(
+        workout_response = schemas.Workout(
             exercises=exercises,
             rounds=workout["rounds"],
             estimated_duration_minutes=workout["estimated_duration_minutes"]
         )
+        
+        return workout_response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error in generate_workout endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/seed")
 def seed(db: Session = Depends(get_db)):
@@ -218,4 +231,38 @@ def cleanup_duplicates(db: Session = Depends(get_db)):
         db.delete(exercise)
     
     db.commit()
-    return deleted_names 
+    return deleted_names
+
+@app.post("/workouts/swap_exercise", response_model=schemas.Exercise)
+def swap_exercise(
+    current_workout_ids: list[int] = Body(...),
+    swap_out_id: int = Body(...),
+    muscle_groups: list[str] = Query(None),
+    equipment: list[str] = Query(None),
+    intensity_level: int = Query(3),
+    db: Session = Depends(get_db)
+):
+    """Swap out an exercise in a workout for a new best-fit exercise."""
+    try:
+        generator = WorkoutGenerator(db)
+        new_ex = generator.swap_exercise(
+            current_workout_ids=current_workout_ids,
+            swap_out_id=swap_out_id,
+            allowed_muscle_groups=muscle_groups,
+            allowed_equipment=equipment,
+            intensity_level=intensity_level
+        )
+        movement_types = get_exercise_movement_types(db, new_ex.id)
+        return schemas.Exercise(
+            id=new_ex.id,
+            name=new_ex.name,
+            description=new_ex.description,
+            movement_types=movement_types,
+            estimated_duration=new_ex.estimated_duration,
+            equipment=new_ex.equipment,
+            muscle_groups=new_ex.muscle_groups,
+            intensity=new_ex.intensity
+        )
+    except Exception as e:
+        logger.error(f"Error in swap_exercise endpoint: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e)) 

@@ -38,7 +38,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.GLUTES,
                 MuscleGroupType.LOWER_BACK,
                 MuscleGroupType.ABS
-            ]
+            ],
+            "intensity": "high"
         },
         {
             "name": "Pushup",
@@ -51,7 +52,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.FRONT_DELTOIDS,
                 MuscleGroupType.TRICEPS,
                 MuscleGroupType.ABS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Single Leg Romanian Deadlift",
@@ -64,7 +66,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.GLUTES,
                 MuscleGroupType.LOWER_BACK,
                 MuscleGroupType.ABS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Landmine Twist",
@@ -76,7 +79,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.OBLIQUES,
                 MuscleGroupType.ABS,
                 MuscleGroupType.SIDE_DELTOIDS
-            ]
+            ],
+            "intensity": "high"
         },
         {
             "name": "Suitcase Deadlift",
@@ -90,7 +94,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.LOWER_BACK,
                 MuscleGroupType.ABS,
                 MuscleGroupType.FOREARMS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Suitcase Lunge",
@@ -103,7 +108,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.GLUTES,
                 MuscleGroupType.ABS,
                 MuscleGroupType.FOREARMS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Goblet Squat",
@@ -116,7 +122,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.GLUTES,
                 MuscleGroupType.ABS,
                 MuscleGroupType.FOREARMS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Goblet Lunge",
@@ -129,7 +136,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.GLUTES,
                 MuscleGroupType.ABS,
                 MuscleGroupType.FOREARMS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Gunslinger",
@@ -143,7 +151,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.FRONT_DELTOIDS,
                 MuscleGroupType.TRICEPS,
                 MuscleGroupType.ABS
-            ]
+            ],
+            "intensity": "high"
         },
         {
             "name": "Renegade Rows",
@@ -158,7 +167,8 @@ def seed_exercises(db: Session):
                 MuscleGroupType.LATS,
                 MuscleGroupType.BICEPS,
                 MuscleGroupType.ABS
-            ]
+            ],
+            "intensity": "medium"
         },
         {
             "name": "Kettlebell Side Bend",
@@ -166,7 +176,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.TWIST],
             "estimated_duration": 45,  # seconds
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         },
         {
             "name": "Standing Dumbbell Wood Chops",
@@ -174,7 +185,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.TWIST],
             "estimated_duration": 45,
             "equipment": ["dumbbell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Standing Overhead Press",
@@ -182,7 +194,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PUSH],
             "estimated_duration": 45,
             "equipment": ["kettlebell", "dumbbell"],
-            "muscle_groups": [MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS]
+            "muscle_groups": [MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS],
+            "intensity": "medium"
         },
         {
             "name": "Mountain Climbers",
@@ -190,7 +203,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE],
             "estimated_duration": 45,
             "equipment": [],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Bent-Over Kettlebell Row (Two Hand)",
@@ -198,7 +212,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PULL, MovementType.HINGE],
             "estimated_duration": 45,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.UPPER_BACK, MuscleGroupType.LATS, MuscleGroupType.BICEPS]
+            "muscle_groups": [MuscleGroupType.UPPER_BACK, MuscleGroupType.LATS, MuscleGroupType.BICEPS],
+            "intensity": "medium"
         },
         {
             "name": "Bent-Over Kettlebell Row (One Hand)",
@@ -206,7 +221,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PULL, MovementType.HINGE],
             "estimated_duration": 45,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.UPPER_BACK, MuscleGroupType.LATS, MuscleGroupType.BICEPS]
+            "muscle_groups": [MuscleGroupType.UPPER_BACK, MuscleGroupType.LATS, MuscleGroupType.BICEPS],
+            "intensity": "medium"
         },
         {
             "name": "Kettlebell High Pull",
@@ -214,7 +230,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PULL, MovementType.HINGE],
             "estimated_duration": 45,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.UPPER_BACK, MuscleGroupType.LATS, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.UPPER_BACK, MuscleGroupType.LATS, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Plank Pull-Through",
@@ -222,7 +239,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE],
             "estimated_duration": 45,
             "equipment": ["kettlebell", "dumbbell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Side Plank Underarm Twist",
@@ -230,7 +248,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE, MovementType.TWIST],
             "estimated_duration": 45,
             "equipment": [],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Kneeling Dumbbell Straight Arm Chop",
@@ -238,7 +257,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.TWIST],
             "estimated_duration": 45,
             "equipment": ["dumbbell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Racked Kettlebell Squat",
@@ -246,7 +266,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT],
             "estimated_duration": 45,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.LOWER_BACK]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.LOWER_BACK],
+            "intensity": "medium"
         },
         {
             "name": "Deadbugs",
@@ -254,7 +275,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE],
             "estimated_duration": 40,
             "equipment": ["dumbbell", "kettlebell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         },
         {
             "name": "Curtsy Goblet Lunge",
@@ -262,7 +284,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT],
             "estimated_duration": 40,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS],
+            "intensity": "medium"
         },
         {
             "name": "Kickstand Single Arm Deadlift",
@@ -270,7 +293,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.HINGE],
             "estimated_duration": 40,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.HAMSTRINGS, MuscleGroupType.GLUTES, MuscleGroupType.LOWER_BACK, MuscleGroupType.FOREARMS]
+            "muscle_groups": [MuscleGroupType.HAMSTRINGS, MuscleGroupType.GLUTES, MuscleGroupType.LOWER_BACK, MuscleGroupType.FOREARMS],
+            "intensity": "medium"
         },
         {
             "name": "Pull-ups",
@@ -278,7 +302,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PULL],
             "estimated_duration": 30,
             "equipment": ["stall bars"],
-            "muscle_groups": [MuscleGroupType.LATS, MuscleGroupType.BICEPS, MuscleGroupType.UPPER_BACK]
+            "muscle_groups": [MuscleGroupType.LATS, MuscleGroupType.BICEPS, MuscleGroupType.UPPER_BACK],
+            "intensity": "medium"
         },
         {
             "name": "Tricep Dips",
@@ -286,7 +311,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PUSH],
             "estimated_duration": 30,
             "equipment": ["stall bars"],
-            "muscle_groups": [MuscleGroupType.TRICEPS, MuscleGroupType.CHEST, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.TRICEPS, MuscleGroupType.CHEST, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
         },
         {
             "name": "Bicep Curls",
@@ -294,7 +320,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PULL],
             "estimated_duration": 30,
             "equipment": ["dumbbell", "kettlebell"],
-            "muscle_groups": [MuscleGroupType.BICEPS, MuscleGroupType.FOREARMS]
+            "muscle_groups": [MuscleGroupType.BICEPS, MuscleGroupType.FOREARMS],
+            "intensity": "medium"
         },
         {
             "name": "Hip Bridges",
@@ -302,7 +329,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.HINGE],
             "estimated_duration": 35,
             "equipment": ["dumbbell"],
-            "muscle_groups": [MuscleGroupType.GLUTES, MuscleGroupType.HAMSTRINGS, MuscleGroupType.LOWER_BACK]
+            "muscle_groups": [MuscleGroupType.GLUTES, MuscleGroupType.HAMSTRINGS, MuscleGroupType.LOWER_BACK],
+            "intensity": "medium"
         },
         {
             "name": "Reverse Goblet Lunge",
@@ -310,7 +338,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT],
             "estimated_duration": 40,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS],
+            "intensity": "medium"
         },
         {
             "name": "Overhead March",
@@ -318,7 +347,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE],
             "estimated_duration": 35,
             "equipment": ["kettlebell", "dumbbell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         },
         {
             "name": "Squat Thruster with a Twist",
@@ -326,7 +356,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT, MovementType.PUSH, MovementType.TWIST],
             "estimated_duration": 45,
             "equipment": ["dumbbell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS],
+            "intensity": "high"
         },
         {
             "name": "Bicep Hammer Curls",
@@ -334,7 +365,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PULL],
             "estimated_duration": 35,
             "equipment": ["dumbbell"],
-            "muscle_groups": [MuscleGroupType.BICEPS, MuscleGroupType.FOREARMS]
+            "muscle_groups": [MuscleGroupType.BICEPS, MuscleGroupType.FOREARMS],
+            "intensity": "medium"
         },
         {
             "name": "Pushup into Side Plank",
@@ -342,7 +374,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.PUSH, MovementType.CORE],
             "estimated_duration": 45,
             "equipment": [],
-            "muscle_groups": [MuscleGroupType.CHEST, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.CHEST, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         },
         {
             "name": "Sumo Squat",
@@ -350,7 +383,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT],
             "estimated_duration": 40,
             "equipment": ["kettlebell", "dumbbell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABS]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABS],
+            "intensity": "medium"
         },
         {
             "name": "Single-arm Kettlebell Clean",
@@ -358,7 +392,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.HINGE, MovementType.PULL],
             "estimated_duration": 40,
             "equipment": ["kettlebell"],
-            "muscle_groups": [MuscleGroupType.HAMSTRINGS, MuscleGroupType.GLUTES, MuscleGroupType.FOREARMS, MuscleGroupType.FRONT_DELTOIDS]
+            "muscle_groups": [MuscleGroupType.HAMSTRINGS, MuscleGroupType.GLUTES, MuscleGroupType.FOREARMS, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "high"
         },
         {
             "name": "Lateral Lunge",
@@ -366,7 +401,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT],
             "estimated_duration": 40,
             "equipment": ["dumbbell", "kettlebell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABDUCTORS]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABDUCTORS],
+            "intensity": "medium"
         },
         {
             "name": "Boxer Squat",
@@ -374,7 +410,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.SQUAT],
             "estimated_duration": 45,
             "equipment": ["dumbbell", "kettlebell"],
-            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         },
         {
             "name": "Russian Twists",
@@ -382,7 +419,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.TWIST],
             "estimated_duration": 40,
             "equipment": ["dumbbell", "kettlebell"],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         },
         {
             "name": "Leg Raises",
@@ -390,7 +428,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE],
             "estimated_duration": 35,
             "equipment": [],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.LOWER_BACK]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.LOWER_BACK],
+            "intensity": "medium"
         },
         {
             "name": "Windshield Wipers",
@@ -398,7 +437,8 @@ def seed_exercises(db: Session):
             "movement_types": [MovementType.CORE],
             "estimated_duration": 40,
             "equipment": [],
-            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES]
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
+            "intensity": "medium"
         }
     ]
     
@@ -422,7 +462,8 @@ def seed_exercises(db: Session):
         db_exercise = models.Exercise(
             name=exercise_data["name"],
             description=exercise_data["description"],
-            estimated_duration=exercise_data["estimated_duration"]
+            estimated_duration=exercise_data["estimated_duration"],
+            intensity=exercise_data["intensity"]
         )
         db.add(db_exercise)
         db.flush()  # Flush to get the ID

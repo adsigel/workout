@@ -69,6 +69,7 @@ class Exercise(Base):
     equipment = relationship("Equipment", secondary=exercise_equipment, back_populates="exercises")
     muscle_groups = relationship("MuscleGroup", secondary=exercise_muscle_groups, back_populates="exercises")
     estimated_duration = Column(Integer)  # Duration in seconds
+    intensity = Column(String, default='medium')  # 'low', 'medium', 'high'
 
 class Equipment(Base):
     __tablename__ = 'equipment'

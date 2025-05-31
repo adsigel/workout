@@ -33,6 +33,7 @@ class ExerciseBase(BaseModel):
     estimated_duration: int
     equipment: List[str]
     muscle_groups: List[MuscleGroupType]
+    intensity: str  # 'low', 'medium', 'high'
 
 class ExerciseCreate(ExerciseBase):
     pass
@@ -41,6 +42,7 @@ class Exercise(ExerciseBase):
     id: int
     equipment: List[Equipment]
     muscle_groups: List[MuscleGroup]
+    intensity: Optional[str] = "medium"
 
     class Config:
         from_attributes = True

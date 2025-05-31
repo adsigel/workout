@@ -3,6 +3,11 @@ from sqlalchemy.orm import Session
 from . import models
 from .models import MovementType, MuscleGroupType
 import random
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class WorkoutGenerator:
     def __init__(self, db: Session):
@@ -162,105 +167,222 @@ class WorkoutGenerator:
         frontal_mgs = {MuscleGroupType.SIDE_DELTOIDS, MuscleGroupType.ADDUCTORS, MuscleGroupType.ABDUCTORS}
         return bool(frontal_mgs.intersection(muscle_groups))
 
-    def generate_workout(self, duration_minutes: int, allowed_muscle_groups: list[str] = None, allowed_equipment: list[str] = None) -> Dict:
-        """Generate a workout with the specified duration in minutes, optionally filtering by allowed muscle groups and equipment."""
-        exercises = self.db.query(models.Exercise).all()
-        if not exercises:
-            raise ValueError("No exercises available in the database")
+    def generate_workout(self, duration_minutes: int, allowed_muscle_groups: list[str] = None, allowed_equipment: list[str] = None, intensity_level: int = 3) -> Dict:
+        """Generate a workout with the specified duration in minutes, optionally filtering by allowed muscle groups, equipment, and intensity level (1-5)."""
+        try:
+            logger.info(f"Starting workout generation with params: duration={duration_minutes}, muscle_groups={allowed_muscle_groups}, equipment={allowed_equipment}, intensity_level={intensity_level}")
+            
+            INTENSITY_MAP = {
+                1: ["low"],
+                2: ["low", "medium"],
+                3: ["medium"],
+                4: ["medium", "high"],
+                5: ["high"]
+            }
+            allowed_intensities = INTENSITY_MAP.get(intensity_level, ["medium"])
+            
+            exercises = self.db.query(models.Exercise).all()
+            if not exercises:
+                raise ValueError("No exercises available in the database")
+            
+            logger.info(f"Found {len(exercises)} total exercises")
 
-        # Deduplicate exercises by name
+            # Deduplicate exercises by name
+            unique_exercises = {}
+            for ex in exercises:
+                if ex.name not in unique_exercises:
+                    unique_exercises[ex.name] = ex
+            exercises = list(unique_exercises.values())
+            logger.info(f"After deduplication: {len(exercises)} exercises")
+
+            # Store original exercises for fallback
+            original_exercises = exercises.copy()
+
+            # Filter by allowed muscle groups if provided
+            if allowed_muscle_groups:
+                allowed_mg_set = set(allowed_muscle_groups)
+                def is_allowed_by_mg(ex):
+                    ex_mgs = {mg.name for mg in ex.muscle_groups}
+                    return ex_mgs.issubset(allowed_mg_set)
+                filtered_exercises = list(filter(is_allowed_by_mg, exercises))
+                if filtered_exercises:
+                    exercises = filtered_exercises
+                    logger.info(f"After muscle group filtering: {len(exercises)} exercises")
+
+            # Filter by allowed equipment if provided
+            if allowed_equipment:
+                allowed_equip_set = set(allowed_equipment)
+                def is_allowed_by_equip(ex):
+                    ex_equip = {e.name for e in ex.equipment}
+                    return bool(ex_equip.intersection(allowed_equip_set))
+                filtered_exercises = list(filter(is_allowed_by_equip, exercises))
+                if filtered_exercises:
+                    exercises = filtered_exercises
+                    logger.info(f"After equipment filtering: {len(exercises)} exercises")
+
+            # Filter by allowed intensities
+            filtered_exercises = [ex for ex in exercises if (getattr(ex, 'intensity', None) or 'medium') in allowed_intensities]
+            if filtered_exercises:
+                exercises = filtered_exercises
+                logger.info(f"After intensity_level filtering: {len(exercises)} exercises")
+
+            # If we have too few exercises after filtering, fall back to less strict filtering
+            if len(exercises) < 3:
+                logger.info("Too few exercises after strict filtering, falling back to less strict filtering")
+                exercises = original_exercises.copy()
+                # Try filtering by just muscle groups and equipment
+                if allowed_muscle_groups or allowed_equipment:
+                    filtered_exercises = exercises
+                    if allowed_muscle_groups:
+                        allowed_mg_set = set(allowed_muscle_groups)
+                        filtered_exercises = [ex for ex in filtered_exercises if any(mg.name in allowed_mg_set for mg in ex.muscle_groups)]
+                    if allowed_equipment and filtered_exercises:
+                        allowed_equip_set = set(allowed_equipment)
+                        filtered_exercises = [ex for ex in filtered_exercises if any(e.name in allowed_equip_set for e in ex.equipment)]
+                    if filtered_exercises:
+                        exercises = filtered_exercises
+                    logger.info(f"After less strict filtering: {len(exercises)} exercises")
+            if len(exercises) < 3:
+                logger.info("Still too few exercises, using all exercises")
+                exercises = original_exercises
+
+            # Identify all frontal/transverse exercises
+            frontal_transverse_exercises = [ex for ex in exercises if self.is_frontal_or_transverse(ex)]
+            logger.info(f"Found {len(frontal_transverse_exercises)} frontal/transverse exercises")
+
+            # Determine how many are required
+            if duration_minutes <= 20:
+                required_count = 1
+            else:
+                required_count = 2
+
+            min_exercises = 3
+            max_exercises = min(10, len(exercises))
+            min_rounds = 1
+            max_rounds = 4
+
+            best_config = None
+            best_diff = float('inf')
+            target_seconds = duration_minutes * 60
+
+            # Try different combinations of exercises and rounds
+            for num_exercises in range(min_exercises, max_exercises + 1):
+                for num_rounds in range(min_rounds, max_rounds + 1):
+                    if num_exercises > len(exercises):
+                        continue
+                    # Select exercises ensuring no similar exercises are adjacent
+                    selected = []
+                    available = exercises.copy()
+                    previous_exercise = None
+                    while len(selected) < num_exercises and available:
+                        candidates = [ex for ex in available if not previous_exercise or not self.are_exercises_similar(ex, previous_exercise)]
+                        if not candidates:
+                            candidates = available
+                        exercise = random.choice(candidates)
+                        selected.append(exercise)
+                        available.remove(exercise)
+                        previous_exercise = exercise
+                    if len(selected) < num_exercises:
+                        continue
+                    # Ensure required number of frontal/transverse exercises
+                    ft_count = sum(1 for ex in selected if self.is_frontal_or_transverse(ex))
+                    if ft_count < required_count and len(frontal_transverse_exercises) >= required_count:
+                        # Replace random exercises with frontal/transverse ones
+                        to_add = required_count - ft_count
+                        # Find which ones are missing
+                        missing = [ex for ex in frontal_transverse_exercises if ex not in selected]
+                        if len(missing) >= to_add:
+                            # Replace random non-frontal/transverse exercises
+                            non_ft_indices = [i for i, ex in enumerate(selected) if not self.is_frontal_or_transverse(ex)]
+                            for i in non_ft_indices[:to_add]:
+                                selected[i] = missing.pop()
+                    # Recount after replacement
+                    ft_count = sum(1 for ex in selected if self.is_frontal_or_transverse(ex))
+                    if ft_count < required_count:
+                        continue  # Skip this config if we can't meet the requirement
+                    total_seconds = self.calculate_workout_duration(selected, num_rounds)
+                    diff = abs(total_seconds - target_seconds)
+                    if diff < best_diff:
+                        best_diff = diff
+                        best_config = (selected, num_rounds, total_seconds)
+                    if diff == 0:
+                        break
+
+            if best_config is None:
+                raise ValueError("Could not generate a workout with the given constraints")
+
+            workout_exercises, rounds, total_seconds = best_config
+            estimated_duration_minutes = round(total_seconds / 60)
+            
+            logger.info(f"Successfully generated workout with {len(workout_exercises)} exercises, {rounds} rounds, {estimated_duration_minutes} minutes")
+            
+            return {
+                "exercises": workout_exercises,
+                "rounds": rounds,
+                "estimated_duration_minutes": estimated_duration_minutes
+            }
+        except Exception as e:
+            logger.error(f"Error generating workout: {str(e)}")
+            raise 
+
+    def swap_exercise(self, current_workout_ids: list[int], swap_out_id: int, allowed_muscle_groups: list[str] = None, allowed_equipment: list[str] = None, intensity_level: int = 3) -> models.Exercise:
+        INTENSITY_MAP = {
+            1: ["low"],
+            2: ["low", "medium"],
+            3: ["medium"],
+            4: ["medium", "high"],
+            5: ["high"]
+        }
+        allowed_intensities = INTENSITY_MAP.get(intensity_level, ["medium"])
+        exercises = self.db.query(models.Exercise).all()
+        # Deduplicate by name
         unique_exercises = {}
         for ex in exercises:
             if ex.name not in unique_exercises:
                 unique_exercises[ex.name] = ex
         exercises = list(unique_exercises.values())
-
-        # Filter by allowed muscle groups if provided
+        # Filter by muscle groups
         if allowed_muscle_groups:
             allowed_mg_set = set(allowed_muscle_groups)
             def is_allowed_by_mg(ex):
                 ex_mgs = {mg.name for mg in ex.muscle_groups}
-                # Only include exercises where all muscle groups are in the allowed set
                 return ex_mgs.issubset(allowed_mg_set)
             filtered_exercises = list(filter(is_allowed_by_mg, exercises))
             if filtered_exercises:
                 exercises = filtered_exercises
-
-        # Filter by allowed equipment if provided
+        # Filter by equipment
         if allowed_equipment:
             allowed_equip_set = set(allowed_equipment)
             def is_allowed_by_equip(ex):
                 ex_equip = {e.name for e in ex.equipment}
-                # Include exercise if ANY of its equipment is in the allowed set
                 return bool(ex_equip.intersection(allowed_equip_set))
             filtered_exercises = list(filter(is_allowed_by_equip, exercises))
             if filtered_exercises:
                 exercises = filtered_exercises
-
-        # Identify all frontal/transverse exercises
-        frontal_transverse_exercises = [ex for ex in exercises if self.is_frontal_or_transverse(ex)]
-
-        # Determine how many are required
-        if duration_minutes <= 20:
-            required_count = 1
-        else:
-            required_count = 2
-
-        min_exercises = 3
-        max_exercises = min(10, len(exercises))
-        min_rounds = 1
-        max_rounds = 4
-
-        best_config = None
-        best_diff = float('inf')
-        target_seconds = duration_minutes * 60
-
-        # Try different combinations of exercises and rounds
-        for num_exercises in range(min_exercises, max_exercises + 1):
-            for num_rounds in range(min_rounds, max_rounds + 1):
-                if num_exercises > len(exercises):
-                    continue
-                # Select exercises ensuring no similar exercises are adjacent
-                selected = []
-                available = exercises.copy()
-                previous_exercise = None
-                while len(selected) < num_exercises and available:
-                    candidates = [ex for ex in available if not previous_exercise or not self.are_exercises_similar(ex, previous_exercise)]
-                    if not candidates:
-                        candidates = available
-                    exercise = random.choice(candidates)
-                    selected.append(exercise)
-                    available.remove(exercise)
-                    previous_exercise = exercise
-                if len(selected) < num_exercises:
-                    continue
-                # Ensure required number of frontal/transverse exercises
-                ft_count = sum(1 for ex in selected if self.is_frontal_or_transverse(ex))
-                if ft_count < required_count and len(frontal_transverse_exercises) >= required_count:
-                    # Replace random exercises with frontal/transverse ones
-                    to_add = required_count - ft_count
-                    # Find which ones are missing
-                    missing = [ex for ex in frontal_transverse_exercises if ex not in selected]
-                    if len(missing) >= to_add:
-                        # Replace random non-frontal/transverse exercises
-                        non_ft_indices = [i for i, ex in enumerate(selected) if not self.is_frontal_or_transverse(ex)]
-                        for i in non_ft_indices[:to_add]:
-                            selected[i] = missing.pop()
-                # Recount after replacement
-                ft_count = sum(1 for ex in selected if self.is_frontal_or_transverse(ex))
-                if ft_count < required_count:
-                    continue  # Skip this config if we can't meet the requirement
-                total_seconds = self.calculate_workout_duration(selected, num_rounds)
-                diff = abs(total_seconds - target_seconds)
-                if diff < best_diff:
-                    best_diff = diff
-                    best_config = (selected, num_rounds, total_seconds)
-                if diff == 0:
-                    break
-        workout_exercises, rounds, total_seconds = best_config
-        estimated_duration_minutes = round(total_seconds / 60)
-        return {
-            "exercises": workout_exercises,
-            "rounds": rounds,
-            "estimated_duration_minutes": estimated_duration_minutes
-        } 
+        # Filter by intensity
+        filtered_exercises = [ex for ex in exercises if (getattr(ex, 'intensity', None) or 'medium') in allowed_intensities]
+        if filtered_exercises:
+            exercises = filtered_exercises
+        # Remove exercises already in the workout
+        exercises = [ex for ex in exercises if ex.id not in current_workout_ids]
+        # Find the index of the exercise to swap out
+        try:
+            idx = current_workout_ids.index(swap_out_id)
+        except ValueError:
+            raise ValueError("Exercise to swap out not found in current workout")
+        # Get neighbors if any
+        prev_id = current_workout_ids[idx-1] if idx > 0 else None
+        next_id = current_workout_ids[idx+1] if idx < len(current_workout_ids)-1 else None
+        prev_ex = next((ex for ex in self.db.query(models.Exercise).all() if ex.id == prev_id), None)
+        next_ex = next((ex for ex in self.db.query(models.Exercise).all() if ex.id == next_id), None)
+        # Prefer exercises that are not similar to neighbors
+        candidates = exercises
+        if prev_ex:
+            candidates = [ex for ex in candidates if not self.are_exercises_similar(ex, prev_ex)]
+        if next_ex:
+            candidates = [ex for ex in candidates if not self.are_exercises_similar(ex, next_ex)]
+        if not candidates:
+            candidates = exercises  # fallback if too strict
+        if not candidates:
+            raise ValueError("No suitable replacement exercise found")
+        return random.choice(candidates) 

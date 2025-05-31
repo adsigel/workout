@@ -25,6 +25,14 @@ const EQUIPMENT = [
 
 const DURATION_OPTIONS = [15, 20, 30, 45];
 
+const INTENSITY_LEVELS = [
+  { value: 1, label: '1 (Low)' },
+  { value: 2, label: '2 (Low/Medium)' },
+  { value: 3, label: '3 (Medium)' },
+  { value: 4, label: '4 (Medium/High)' },
+  { value: 5, label: '5 (High)' },
+];
+
 interface Exercise {
   id: number;
   name: string;
@@ -33,6 +41,7 @@ interface Exercise {
   equipment: { name: string }[];
   muscle_groups: { name: string }[];
   movement_types: string[];
+  intensity?: string;
 }
 
 interface Workout {
@@ -50,6 +59,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<string[]>([...MUSCLE_GROUPS]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([...EQUIPMENT]);
+  const [intensityLevel, setIntensityLevel] = useState(3);
+  const [swapLoadingIndex, setSwapLoadingIndex] = useState<number | null>(null);
 
   const handleMuscleGroupChange = (group: string) => {
     setSelectedMuscleGroups((prev) =>
@@ -76,6 +87,7 @@ export default function Home() {
       });
       selectedMuscleGroups.forEach((mg) => params.append('muscle_groups', mg));
       selectedEquipment.forEach((eq) => params.append('equipment', eq));
+      params.append('intensity_level', intensityLevel.toString());
       const response = await fetch(`${API_URL}/workouts/generate?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to generate workout');
@@ -86,6 +98,41 @@ export default function Home() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSwapExercise = async (swapIndex: number) => {
+    if (!workout) return;
+    setSwapLoadingIndex(swapIndex);
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        intensity_level: intensityLevel.toString(),
+      });
+      selectedMuscleGroups.forEach((mg) => params.append('muscle_groups', mg));
+      selectedEquipment.forEach((eq) => params.append('equipment', eq));
+      const current_workout_ids = workout.exercises.map((ex) => ex.id);
+      const swap_out_id = workout.exercises[swapIndex].id;
+      const response = await fetch(`${API_URL}/workouts/swap_exercise?${params.toString()}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current_workout_ids, swap_out_id })
+        });
+      if (!response.ok) {
+        throw new Error('Failed to swap exercise');
+      }
+      const newExercise = await response.json();
+      setWorkout((prev) => {
+        if (!prev) return prev;
+        const newExercises = [...prev.exercises];
+        newExercises[swapIndex] = newExercise;
+        return { ...prev, exercises: newExercises };
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setSwapLoadingIndex(null);
     }
   };
 
@@ -158,6 +205,22 @@ export default function Home() {
                     </div>
                   </div>
 
+                  {/* Intensity Level Selection */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Intensity Level</label>
+                    <select
+                      value={intensityLevel}
+                      onChange={(e) => setIntensityLevel(Number(e.target.value))}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
+                    >
+                      {INTENSITY_LEVELS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <button
                     onClick={generateWorkout}
                     disabled={loading}
@@ -189,10 +252,21 @@ export default function Home() {
                   <div key={exercise.id} className="border-b border-gray-200 pb-4 last:border-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium mb-0">{index + 1}. {exercise.name}</h3>
+                      <button
+                        className="ml-2 text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 focus:outline-none"
+                        title="Swap exercise"
+                        onClick={() => handleSwapExercise(index)}
+                        disabled={swapLoadingIndex === index}
+                      >
+                        {swapLoadingIndex === index ? '...' : '🔄'}
+                      </button>
                       {exercise.equipment.length > 0 && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase">
                           {exercise.equipment.map(e => e.name === 'kettlebell' ? 'KB' : e.name === 'dumbbell' ? 'DB' : e.name.toUpperCase()).join(', ')}
                         </span>
+                      )}
+                      {exercise.intensity && (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${exercise.intensity === 'high' ? 'bg-red-200 text-red-800' : exercise.intensity === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{exercise.intensity.toUpperCase()}</span>
                       )}
                     </div>
                     <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
