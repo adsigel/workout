@@ -7,6 +7,18 @@ const MUSCLE_GROUPS = [
   'abs', 'obliques', 'lower_back', 'quads', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors'
 ];
 
+const MUSCLE_GROUP_CATEGORIES = {
+  'UPPER BODY': [
+    'chest', 'front_deltoids', 'side_deltoids', 'rear_deltoids', 'biceps', 'triceps', 'forearms', 'upper_back', 'lats'
+  ],
+  'CORE': [
+    'abs', 'obliques', 'lower_back'
+  ],
+  'LOWER BODY': [
+    'quads', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors'
+  ]
+};
+
 const EQUIPMENT = [
   'kettlebell', 'dumbbell', 'stall bars'
 ];
@@ -105,25 +117,32 @@ export default function Home() {
 
                   {/* Muscle Groups Selection */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Muscle Groups (click to exclude)</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {MUSCLE_GROUPS.map((group) => (
-                        <label key={group} className="inline-flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedMuscleGroups.includes(group)}
-                            onChange={() => handleMuscleGroupChange(group)}
-                            className="form-checkbox h-4 w-4 text-orange-600"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">{group.replace('_', ' ')}</span>
-                        </label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Muscle Groups</label>
+                    <div className="space-y-2">
+                      {Object.entries(MUSCLE_GROUP_CATEGORIES).map(([category, groups]) => (
+                        <div key={category}>
+                          <div className="font-semibold text-xs text-gray-500 mb-1 mt-2 uppercase">{category}</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {groups.map((group) => (
+                              <label key={group} className="inline-flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedMuscleGroups.includes(group)}
+                                  onChange={() => handleMuscleGroupChange(group)}
+                                  className="form-checkbox h-4 w-4 text-orange-600"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">{group.replace('_', ' ')}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Equipment Selection */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Equipmen (click to exclude)</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Equipment (click to exclude)</label>
                     <div className="grid grid-cols-2 gap-2">
                       {EQUIPMENT.map((equipment) => (
                         <label key={equipment} className="inline-flex items-center">
