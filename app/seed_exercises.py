@@ -453,11 +453,13 @@ def seed_exercises(db: Session):
     skipped_exercises = []
     
     for exercise_data in exercises:
-        # Skip if exercise already exists
-        if exercise_data["name"] in existing_exercises:
+        db_exercise = db.query(models.Exercise).filter(models.Exercise.name == exercise_data["name"]).first()
+        if db_exercise:
+            # Update intensity if needed
+            db_exercise.intensity = exercise_data["intensity"]
+            db.commit()
             skipped_exercises.append(exercise_data["name"])
             continue
-            
         # Create exercise
         db_exercise = models.Exercise(
             name=exercise_data["name"],
