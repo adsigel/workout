@@ -8,6 +8,7 @@ from .models import MovementType, MuscleGroupType
 from .workout_generator import WorkoutGenerator
 from app.seed_exercises import seed_exercises
 import logging
+from sqlalchemy import text
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -265,4 +266,15 @@ def swap_exercise(
         )
     except Exception as e:
         logger.error(f"Error in swap_exercise endpoint: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e)) 
+        raise HTTPException(status_code=400, detail=str(e))
+
+# TEMPORARY: Admin endpoint to add intensity column to exercises table
+# REMOVE THIS ENDPOINT AFTER MIGRATION!
+@app.post("/admin/add_intensity_column")
+def add_intensity_column(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("ALTER TABLE exercises ADD COLUMN intensity VARCHAR"))
+        db.commit()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)} 
