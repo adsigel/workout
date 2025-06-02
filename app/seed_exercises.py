@@ -439,6 +439,78 @@ def seed_exercises(db: Session):
             "equipment": [],
             "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.OBLIQUES],
             "intensity": "medium"
+        },
+        {
+            "name": "Goblet Overhead Press",
+            "description": "Hold a kettlebell by the horns at chest height and press it overhead, keeping your core engaged.",
+            "movement_types": [MovementType.PUSH],
+            "estimated_duration": 40,
+            "equipment": ["kettlebell"],
+            "muscle_groups": [MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS, MuscleGroupType.ABS],
+            "intensity": "medium"
+        },
+        {
+            "name": "Shoulder Taps",
+            "description": "From a plank position, tap each shoulder with the opposite hand, keeping hips steady.",
+            "movement_types": [MovementType.CORE],
+            "estimated_duration": 30,
+            "equipment": [],
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS],
+            "intensity": "low"
+        },
+        {
+            "name": "Standing Knee to Elbow Twists",
+            "description": "Stand tall, bring one knee up and twist your torso to touch the opposite elbow to the knee.",
+            "movement_types": [MovementType.TWIST, MovementType.CORE],
+            "estimated_duration": 30,
+            "equipment": [],
+            "muscle_groups": [MuscleGroupType.OBLIQUES, MuscleGroupType.ABS, MuscleGroupType.HAMSTRINGS],
+            "intensity": "low"
+        },
+        {
+            "name": "Push Up Walkouts",
+            "description": "From standing, hinge at the hips, walk your hands out to a pushup position, perform a pushup, then walk back and stand.",
+            "movement_types": [MovementType.PUSH, MovementType.HINGE, MovementType.CORE],
+            "estimated_duration": 40,
+            "equipment": [],
+            "muscle_groups": [MuscleGroupType.CHEST, MuscleGroupType.ABS, MuscleGroupType.HAMSTRINGS, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
+        },
+        {
+            "name": "Two-handed Kettlebell Clean to Press",
+            "description": "Clean a kettlebell to chest height with both hands, then press it overhead.",
+            "movement_types": [MovementType.HINGE, MovementType.PUSH],
+            "estimated_duration": 45,
+            "equipment": ["kettlebell"],
+            "muscle_groups": [MuscleGroupType.GLUTES, MuscleGroupType.HAMSTRINGS, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS, MuscleGroupType.ABS],
+            "intensity": "high"
+        },
+        {
+            "name": "One-handed Kettlebell Clean to Press",
+            "description": "Clean a kettlebell to the rack position with one hand, then press it overhead.",
+            "movement_types": [MovementType.HINGE, MovementType.PUSH],
+            "estimated_duration": 40,
+            "equipment": ["kettlebell"],
+            "muscle_groups": [MuscleGroupType.GLUTES, MuscleGroupType.HAMSTRINGS, MuscleGroupType.FRONT_DELTOIDS, MuscleGroupType.TRICEPS, MuscleGroupType.ABS],
+            "intensity": "high"
+        },
+        {
+            "name": "Kettlebell Racked March",
+            "description": "Hold a kettlebell in the rack position and march in place, keeping your core tight.",
+            "movement_types": [MovementType.CORE],
+            "estimated_duration": 35,
+            "equipment": ["kettlebell"],
+            "muscle_groups": [MuscleGroupType.ABS, MuscleGroupType.QUADS, MuscleGroupType.GLUTES, MuscleGroupType.FRONT_DELTOIDS],
+            "intensity": "medium"
+        },
+        {
+            "name": "Two-handed Kettlebell Clean to Squat",
+            "description": "Clean a kettlebell to chest height with both hands, then perform a squat.",
+            "movement_types": [MovementType.HINGE, MovementType.SQUAT],
+            "estimated_duration": 45,
+            "equipment": ["kettlebell"],
+            "muscle_groups": [MuscleGroupType.GLUTES, MuscleGroupType.HAMSTRINGS, MuscleGroupType.QUADS, MuscleGroupType.ABS],
+            "intensity": "high"
         }
     ]
     
